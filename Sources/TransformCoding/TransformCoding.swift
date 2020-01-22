@@ -51,3 +51,36 @@ where Transformer.DecodedType: Equatable {}
 
 extension TransformCoding: Hashable
 where Transformer.DecodedType: Hashable {}
+
+extension CodingTransformer {
+
+    public typealias OrNil = TransformOptional<Self>
+
+}
+
+public struct TransformOptional<Transformer: CodingTransformer>: CodingTransformer {
+
+    public typealias DecodedType = Transformer.DecodedType?
+    public typealias EncodedType = Transformer.EncodedType?
+
+}
+
+extension TransformOptional: TransformEncodable where Transformer: TransformEncodable {
+    
+    public static func transformEncode(
+        _ value: Transformer.DecodedType?
+    ) throws -> Transformer.EncodedType? {
+        try value.map { try Transformer.transformEncode($0) }
+    }
+    
+}
+
+extension TransformOptional: TransformDecodable where Transformer: TransformDecodable {
+
+    public static func transformDecode(
+        _ encoded: Transformer.EncodedType?
+    ) throws -> Transformer.DecodedType? {
+        try encoded.map { try Transformer.transformDecode($0) }
+    }
+
+}

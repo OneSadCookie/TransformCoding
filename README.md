@@ -53,5 +53,5 @@ struct IHaveADate: Codable, Equatable {
 Add to your `Package.swift`'s `dependencies:` array:
 
 ```swift
-.package(url: "https://github.com/onesadcookie/TransformCoding.git", from: "1.0.0"),
+.package(url: "https://github.com/onesadcookie/TransformCoding.git", from: "1.1.0"),
 ```

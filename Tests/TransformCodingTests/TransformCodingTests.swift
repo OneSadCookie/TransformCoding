@@ -18,8 +18,20 @@ struct IHaveADate: Codable, Equatable {
     var string: String
 }
 
-struct Compatible: Codable, Equatable {
+struct HaveCompatible: Codable, Equatable {
     var date: String
+    var string: String
+}
+
+struct IMightHaveADate: Codable, Equatable {
+    @TransformCoding<ShortSlashUTCDateFormat.OrNil>
+    var date: Date?
+    
+    var string: String
+}
+
+struct MightHaveCompatible: Codable, Equatable {
+    var date: String?
     var string: String
 }
 
@@ -28,14 +40,32 @@ final class TransformCodingTests: XCTestCase {
     func testHappyPath() throws {
         let thing = IHaveADate(date: .init(timeIntervalSinceReferenceDate: 60 * 60 * 24), string: "hi")
         let data = try JSONEncoder().encode(thing)
-        let compat = try JSONDecoder().decode(Compatible.self, from: data)
-        XCTAssertEqual(compat, Compatible(date: "02/01/2001", string: "hi"))
+        let compat = try JSONDecoder().decode(HaveCompatible.self, from: data)
+        XCTAssertEqual(compat, HaveCompatible(date: "02/01/2001", string: "hi"))
         let reThing = try JSONDecoder().decode(IHaveADate.self, from: data)
         XCTAssertEqual(thing, reThing)
     }
     
+    func testHappyPathOptional() throws {
+        let thing = IMightHaveADate(date: .init(timeIntervalSinceReferenceDate: 60 * 60 * 24), string: "hi")
+        let data = try JSONEncoder().encode(thing)
+        let compat = try JSONDecoder().decode(MightHaveCompatible.self, from: data)
+        XCTAssertEqual(compat, MightHaveCompatible(date: "02/01/2001", string: "hi"))
+        let reThing = try JSONDecoder().decode(IMightHaveADate.self, from: data)
+        XCTAssertEqual(thing, reThing)
+    }
+    
+    func testNilOptional() throws {
+        let thing = IMightHaveADate(date: nil, string: "hi")
+        let data = try JSONEncoder().encode(thing)
+        let compat = try JSONDecoder().decode(MightHaveCompatible.self, from: data)
+        XCTAssertEqual(compat, MightHaveCompatible(date: nil, string: "hi"))
+        let reThing = try JSONDecoder().decode(IMightHaveADate.self, from: data)
+        XCTAssertEqual(thing, reThing)
+    }
+    
     func testDateParseError() throws {
-        let compat = Compatible(date: "oops", string: "hi")
+        let compat = HaveCompatible(date: "oops", string: "hi")
         let data = try JSONEncoder().encode(compat)
         XCTAssertThrowsError(
             try JSONDecoder().decode(IHaveADate.self, from: data)
@@ -51,6 +81,8 @@ final class TransformCodingTests: XCTestCase {
 
     static var allTests = [
         ("testHappyPath", testHappyPath),
+        ("testHappyPathOptional", testHappyPathOptional),
+        ("testNilOptional", testNilOptional),
         ("testDateParseError", testDateParseError),
     ]
 }
